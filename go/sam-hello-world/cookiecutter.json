@@ -1,0 +1,7 @@
+{
+    "author": "Project author",
+    "project_name": "Name of the project",
+    "_copy_without_render": [
+        ".gitignore"
+    ]
+}

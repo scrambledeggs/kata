@@ -1,0 +1,110 @@
+# {{ cookiecutter.project_name }}
+
+This is a template for {{ cookiecutter.project_name }} - Below is a brief explanation of what we have generated for you:
+
+```bash
+.
+├── db                            <-- Database folders separated
+|   └── migrations                <-- Migration files by goose
+├── events                        <-- Contains sample events for invoking the lambda function
+├── handlers                      <-- Source code for lambda functions
+│   └── ActionResourceV1Function  <-- Lambda function name
+│      ├── main_test.go           <-- Lambda function unit test
+|      └── main.go                <-- Lambda function code
+├── .secrets.local.json           <-- (gitignored) holds the secret json or env
+├── go.mod                        <-- dependency manager
+├── go.sum                        <-- modules
+├── Makefile                      <-- Make to automate build
+├── README.md                     <-- You are here
+├── samconfig.toml                <-- Local Deployment Script to AWS
+└── template.yaml                 <-- AWS SAM template file for building the infrastructure
+```
+
+## Requirements
+
+* AWS CLI already configured with Administrator permission
+* [Docker installed](https://www.docker.com/community-edition)
+* [Golang](https://golang.org)
+* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
+
+## Setup process
+
+```bash
+go mod init [project-name]
+go mod tidy
+```
+
+### Local development
+
+**Invoking function locally through local API Gateway**
+
+```bash
+make dev
+```
+
+If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/hello-world`
+
+**SAM CLI** is used to emulate both Lambda and API Gateway locally and uses our `template.yaml` to understand how to bootstrap this environment (runtime, where the source code is, etc.) - The following excerpt is what the CLI will read in order to initialize an API and its routes:
+
+```yaml
+...
+Events:
+    HelloWorldV1Function:
+        Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        Properties:
+            Path: /hello-world
+            Method: get
+```
+
+## Deployment
+
+To deploy your application for the first time, run the following in your shell:
+
+```bash
+sam deploy --guided
+```
+
+### Testing
+
+We use `testing` package that is built-in in Golang and you can simply run the following command to run our tests:
+
+```shell
+go test -v .
+```
+
+# Appendix
+
+### Golang installation
+
+Please ensure Go 1.x (where 'x' is the latest version) is installed as per the instructions on the official golang website: https://golang.org/doc/install
+
+A quickstart way would be to use Homebrew, chocolatey or your linux package manager.
+
+#### Homebrew (Mac)
+
+Issue the following command from the terminal:
+
+```shell
+brew install golang
+```
+
+If it's already installed, run the following command to ensure it's the latest version:
+
+```shell
+brew update
+brew upgrade golang
+```
+
+#### Chocolatey (Windows)
+
+Issue the following command from the powershell:
+
+```shell
+choco install golang
+```
+
+If it's already installed, run the following command to ensure it's the latest version:
+
+```shell
+choco upgrade golang
+```
