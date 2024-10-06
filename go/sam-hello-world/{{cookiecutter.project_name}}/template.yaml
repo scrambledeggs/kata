@@ -5,8 +5,34 @@ Description: >
 
   SAM Template for {{ cookiecutter.project_name }}
 
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: {{ cookiecutter.project_name }}
+    Description: SAM Template for {{ cookiecutter.project_name }}
+    Author: {{ cookiecutter.author }}
+    ReadmeUrl: README.md
+    HomePageUrl: https://github.com/scrambledeggs/{{ cookiecutter.project_name }}
+    SourceCodeUrl: https://github.com/scrambledeggs/{{ cookiecutter.project_name }}
+    SemanticVersion: 0.0.1
+
 Parameters:
   AppEnv:
+    Type: String
+    Default: "test"
+  CorsAllowedHeaders:
+    Type: String
+    Default: "Access-Control-Allow-Headers,Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,X-Api-Key"
+  CorsAllowedMethods:
+    Type: String
+    Default: "POST,GET,PUT,PATCH,DELETE,OPTIONS"
+  CorsAllowedOrigins:
+    Type: String
+    Default: "*"
+  HostedZoneId:
+    Type: String
+  SecurityGroups:
+    Type: String
+  Subnets:
     Type: String
 
 Conditions:
@@ -15,13 +41,61 @@ Conditions:
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
+    Tracing: Active
+    Tags:
+      Usage: {{ cookiecutter.project_name }}
+      Environment: !If [ProdEnv, prod, non-prod]
+    PropagateTags: true
+    VpcConfig:
+      SecurityGroupIds: !Split [",", !Ref SecurityGroups]
+      SubnetIds: !Split [",", !Ref Subnets]
+
     Timeout: 5
     MemorySize: 128
+
+    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
+    LoggingConfig:
+      LogFormat: JSON
+
     Environment:
       Variables:
         APP_ENV: !Ref AppEnv
+  Api:
+    TracingEnabled: true
+    Cors:
+      AllowHeaders: !Join ["", ["'", !Ref CorsAllowedHeaders, "'"]]
+      AllowMethods: !Join ["", ["'", !Ref CorsAllowedMethods, "'"]]
+      AllowOrigin: !Join ["", ["'", !Ref CorsAllowedOrigins, "'"]]
 
 Resources:
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref AppEnv
+      GatewayResponses:
+        DEFAULT_4xx:
+          ResponseParameters:
+            Headers:
+              Access-Control-Expose-Headers: "'WWW-Authenticate'"
+              Access-Control-Allow-Origin: !Join ["", ["'", !Ref CorsAllowedOrigins, "'"]]
+      Auth:
+        DefaultAuthorizer: ApiKeyAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          ApiKeyAuthorizer:
+            FunctionPayloadType: REQUEST
+            FunctionArn: !Ref AuthorizerFunctionArn
+            Identity:
+              Headers:
+                - x-api-key
+              ReauthorizeEvery: 0
+      Domain:
+        DomainName: !If [ProdEnv, {{ cookiecutter.project_name }}.booky.ph, !Join ["-", [!Ref AppEnv, "{{ cookiecutter.project_name }}.booky.ph"]]]
+        EndpointConfiguration: REGIONAL
+        CertificateArn: !Ref CertificateArn
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
+
   HelloWorldV1Function:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
