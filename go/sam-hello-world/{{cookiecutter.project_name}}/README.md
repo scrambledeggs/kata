@@ -8,7 +8,7 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 |   └── migrations                <-- Migration files by goose
 ├── events                        <-- Contains sample events for invoking the lambda function
 ├── handlers                      <-- Source code for lambda functions
-│   └── ActionResourceV1Function  <-- Lambda function name
+│   └── ActionResourceV1          <-- Lambda function name
 │      ├── main_test.go           <-- Lambda function unit test
 |      └── main.go                <-- Lambda function code
 ├── .secrets.local.json           <-- (gitignored) holds the secret json or env
@@ -49,7 +49,7 @@ If the previous command ran successfully you should now be able to hit the follo
 ```yaml
 ...
 Events:
-    HelloWorldV1Function:
+    HelloWorldV1:
         Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
         Properties:
             Path: /hello-world
@@ -61,7 +61,7 @@ Events:
 To deploy your application for the first time, run the following in your shell:
 
 ```bash
-sam deploy --guided
+make deploy
 ```
 
 ### Testing

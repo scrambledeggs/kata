@@ -19,6 +19,10 @@ Parameters:
   AppEnv:
     Type: String
     Default: "test"
+  AuthorizerFunctionArn:
+    Type: String
+  CertificateArn:
+    Type: String
   CorsAllowedHeaders:
     Type: String
     Default: "Access-Control-Allow-Headers,Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,X-Api-Key"
@@ -96,12 +100,12 @@ Resources:
         Route53:
           HostedZoneId: !Ref HostedZoneId
 
-  HelloWorldV1Function:
+  HelloWorldV1:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: handlers/HelloWorldV1Function
+      CodeUri: handlers/HelloWorldV1
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures:
@@ -123,8 +127,8 @@ Outputs:
   # HelloWorldAPI:
   #   Description: "API Gateway endpoint URL for Prod environment for First Function"
   #   Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello-world/"
-  HelloWorldFunction:
+  HelloWorldV1Arn:
     Description: "First Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
+    Value: !GetAtt HelloWorldV1.Arn
     Export:
-      Name: HelloWorldFunction
+      Name: !If [ProdEnv, "HelloWorldV1Arn", !Join ["-", [!Ref AppEnv, "HelloWorldV1Arn"]]]
