@@ -4,14 +4,14 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 ```bash
 .
-├── db                            <-- Database folders separated
-|   └── migrations                <-- Migration files by goose
+├── db                            <-- Database folders
+|   └── migrations                <-- Migration files by goose (or choose your poison)
 ├── events                        <-- Contains sample events for invoking the lambda function
 ├── handlers                      <-- Source code for lambda functions
 │   └── ActionResourceV1          <-- Lambda function name
 │      ├── main_test.go           <-- Lambda function unit test
 |      └── main.go                <-- Lambda function code
-├── .secrets.local.json           <-- (gitignored) holds the secret json or env
+├── .secrets.local.json           <-- (gitignored) holds the ENV secrets json
 ├── go.mod                        <-- dependency manager
 ├── go.sum                        <-- modules
 ├── Makefile                      <-- Make to automate build
@@ -29,17 +29,20 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 ## Setup process
 
+1. Run the following commands
 ```bash
-go mod init [project-name]
-go mod tidy
+$ go mod init [project-name]
+$ go mod tidy
 ```
 
 ### Local development
 
 **Invoking function locally through local API Gateway**
 
+1. make sure you have `.secrets.local.json` file
+2. then run the following in your shell:
 ```bash
-make dev
+$ make dev
 ```
 
 If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/hello-world`
@@ -53,15 +56,19 @@ Events:
         Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
         Properties:
             Path: /hello-world
-            Method: get
+            Method: GET
 ```
 
 ## Deployment
 
-To deploy your application for the first time, run the following in your shell:
+To deploy your application for the first time,
+
+1. make sure you have `.secrets.json` file
+    - you can copy .secrets.local.json
+2. then run the following in your shell:
 
 ```bash
-make deploy
+$ make deploy
 ```
 
 ### Testing
@@ -69,7 +76,7 @@ make deploy
 We use `testing` package that is built-in in Golang and you can simply run the following command to run our tests:
 
 ```shell
-go test -v .
+$ go test -v .
 ```
 
 # Appendix
@@ -85,14 +92,14 @@ A quickstart way would be to use Homebrew, chocolatey or your linux package mana
 Issue the following command from the terminal:
 
 ```shell
-brew install golang
+$ brew install golang
 ```
 
 If it's already installed, run the following command to ensure it's the latest version:
 
 ```shell
-brew update
-brew upgrade golang
+$ brew update
+$ brew upgrade golang
 ```
 
 #### Chocolatey (Windows)
@@ -100,11 +107,11 @@ brew upgrade golang
 Issue the following command from the powershell:
 
 ```shell
-choco install golang
+$ choco install golang
 ```
 
 If it's already installed, run the following command to ensure it's the latest version:
 
 ```shell
-choco upgrade golang
+$ choco upgrade golang
 ```
