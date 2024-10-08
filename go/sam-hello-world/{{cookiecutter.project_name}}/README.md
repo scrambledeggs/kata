@@ -11,6 +11,7 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 │   └── ActionResourceV1          <-- Lambda function name
 │      ├── main_test.go           <-- Lambda function unit test
 |      └── main.go                <-- Lambda function code
+├── scripts                       <-- Go code that executed separately
 ├── .secrets.local.json           <-- (gitignored) holds the ENV secrets json
 ├── go.mod                        <-- dependency manager
 ├── go.sum                        <-- modules
@@ -22,7 +23,7 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 ## Requirements
 
-* AWS CLI already configured with Administrator permission
+* AWS CLI already configured with permissions
 * [Docker installed](https://www.docker.com/community-edition)
 * [Golang](https://golang.org)
 * SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
