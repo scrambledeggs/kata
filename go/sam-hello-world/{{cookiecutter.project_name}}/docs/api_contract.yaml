@@ -1,0 +1,215 @@
+openapi: 3.0.2
+info:
+  title: "foobar Service"
+  version: "1.0"
+  description: "foobar Service API"
+  contact:
+    name: "Alec"
+servers:
+  - url: https://test-foobar.booky.ph
+    description: TEST Environment
+  - url: https://staging-foobar.booky.ph
+    description: STAGING Environment
+  - url: https://foobar.booky.ph
+    description: PRODUCTION Environment
+tags:
+  - name: Utilities
+    description: Utilities related endpoints
+  - name: WIP
+    description: Work in progress
+paths:
+  /endpoints:
+    get:
+      operationId: allEndpoints
+      description: All endpoints
+      summary: Show all endpoints
+      tags:
+        - Utilities
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - "GET /v1/hello-world"
+                      - "GET /endpoints"
+        500:
+          description: Something went wrong
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'open ./endpoints.yml: no such file or directory'
+
+  /v1/hello-world:
+    get:
+      operationId: helloWorld
+      description: Hello World
+      summary: Say hello to the world
+      tags:
+        - WIP
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Successfully found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/create_report_transaction_body'
+        400:
+          $ref: '#/components/responses/bad_request'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        403:
+          $ref: '#/components/responses/forbidden'
+        404:
+          $ref: '#/components/responses/not_found'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+  responses:
+    bad_request:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: INVALID_PAYLOAD
+              message:
+                type: string
+                example: "unexpected end of JSON input"
+    unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: UNAUTHORIZED
+              message:
+                type: string
+                example: Unauthorized
+    forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: FORBIDDEN
+              message:
+                type: string
+                example: "User is not authorized to access this resource with an explicit deny"
+    not_found:
+      description: Record not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: DATABASE_ERROR
+              message:
+                type: string
+                example: "no rows in result set"
+    db_error:
+      description: Something went wrong
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: DATABASE_ERROR
+              message:
+                type: string
+                example: "failed to insert/update/something"
+    sns_error:
+      description: Something went wrong
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                example: SNS_PUBLISH_FAILED
+              message:
+                type: string
+                example: "failed to publish..."
+  parameters:
+    id:
+      in: path
+      name: id
+      required: true
+      schema:
+        $ref: '#/components/schemas/uuid'
+      description: ID
+  schemas:
+    null_object:
+      type: object
+      nullable: true
+      example: null
+    empty_errors:
+      type: array
+      items:
+        type: string
+      example: []
+    string:
+      type: string
+      example: string
+    nullable_string:
+      type: string
+      nullable: true
+      example: null
+    uuid:
+      type: string
+      example: fea50a72-b04d-4214-96e7-94afe268d9a4
+    url:
+      type: string
+      example: https://www.example.com/page.html
+    date:
+      type: string
+      example: 2024-03-15
+    datetime:
+      type: string
+      example: 2024-03-15
+    nullable_date:
+      type: string
+      nullable: true
+      example: null
+    timestamp:
+      type: string
+      example: 2024-03-15T12:52:38.33652+08:00
+    successful:
+      type: boolean
+      example: true
+    unsuccessful:
+      type: boolean
+      example: false

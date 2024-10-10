@@ -69,7 +69,7 @@ To deploy your application for the first time,
 2. then run the following in your shell:
 
 ```bash
-$ make deploy
+$ make deploy ENV=test
 ```
 
 ### Testing
