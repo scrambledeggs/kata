@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/scrambledeggs/booky-go-common/logs"
 )
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -17,6 +18,8 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	} else {
 		greeting = fmt.Sprintf("Hello, %s! In %s env\n", sourceIP, os.Getenv("APP_ENV"))
 	}
+
+	logs.Info("Greet", greeting)
 
 	return events.APIGatewayProxyResponse{
 		Body:       greeting,
