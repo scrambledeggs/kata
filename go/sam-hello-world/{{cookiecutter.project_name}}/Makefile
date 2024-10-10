@@ -11,10 +11,10 @@ build:
 
 .PHONY: deploy
 deploy: generate-endpoints
-	@envs=$$(go run scripts/parameter_overrides.go .secrets.json); \
+	@envs=$$(go run scripts/parameter-overrides/main.go .secrets.json); \
 	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(SERVICE)-$(ENV) --no-confirm-changeset
 
 .PHONY: dev
 dev: generate-endpoints
-	@envs=$$(go run scripts/parameter_overrides.go .secrets.local.json); \
+	@envs=$$(go run scripts/parameter-overrides/main.go .secrets.local.json); \
 	sam local start-api --port 3000 --parameter-overrides "$$envs"
