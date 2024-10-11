@@ -35,18 +35,37 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 $ go mod init [project-name]
 $ go mod tidy
 ```
+2. This is provided with .secrets.local.json and has empty ENV variables
+
+### Environment
+
+1. Default environment handler is in [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). `generate-secrets` downloads the environment and generates .secrets.json
+2. Format is in JSON format, keys should be in CamelCase
+```json
+{
+    "AppEnv": "test",
+    "AuthorizerFunctionArn": "",
+    "CertificateArn": "",
+    "HostedZoneId": "",
+    "SecurityGroups": "",
+    "Subnets": ""
+}
+```
+3. This is then read by `Makefile` using `generate-parameter-overrides`
+4. Development (`make dev`) uses `.secrets.local.json`
+5. Deployment (`make deploy`) uses (and builds) using `.secrets.json`
 
 ### Local development
 
 **Invoking function locally through local API Gateway**
 
-1. make sure you have `.secrets.local.json` file
-2. then run the following in your shell:
+1. Make sure you have `.secrets.local.json` file
+2. Run the following in your shell:
 ```bash
 $ make dev
 ```
 
-If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/hello-world`
+If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/v1/hello-world`
 
 **SAM CLI** is used to emulate both Lambda and API Gateway locally and uses our `template.yaml` to understand how to bootstrap this environment (runtime, where the source code is, etc.) - The following excerpt is what the CLI will read in order to initialize an API and its routes:
 
@@ -56,7 +75,7 @@ Events:
     HelloWorldV1:
         Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
         Properties:
-            Path: /hello-world
+            Path: /v1/hello-world
             Method: GET
 ```
 
@@ -64,9 +83,9 @@ Events:
 
 To deploy your application for the first time,
 
-1. make sure you have `.secrets.json` file
-    - you can copy .secrets.local.json
-2. then run the following in your shell:
+1. Make sure you have secrets manager named under (env-){{ cookiecutter.project_name }}
+    - This would be used when generate-secrets executes
+2. Run the following in your shell:
 
 ```bash
 $ make deploy ENV=test
