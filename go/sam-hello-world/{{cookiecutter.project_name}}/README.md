@@ -81,15 +81,22 @@ Events:
 
 ## Deployment
 
+### CLI
 To deploy your application for the first time,
 
 1. Make sure you have secrets manager named under (env-){{ cookiecutter.project_name }}
     - This would be used when generate-secrets executes
 2. Run the following in your shell:
-
 ```bash
 $ make deploy ENV=test
 ```
+
+### Github actions
+1. Actions -> Start Deployment
+2. Run workflow
+- Choose branch [main]
+- Deploy to TEST Env
+- Run workflow
 
 ### Testing
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -9,19 +10,19 @@ import (
 	"strings"
 )
 
-func main() {
-	filePath := ".secrets.json"
-	if len(os.Args) > 1 {
-		filePath = os.Args[1]
-	}
+const DEFAULT_PATH = ".secrets.json"
 
-	jsonFile, err := os.Open(filePath)
+func main() {
+	path := flag.String("path", DEFAULT_PATH, "Path of File")
+	flag.Parse()
+
+	file, err := os.Open(*path)
 	if err != nil {
 		log.Fatalf("Failed to open file: %s", err)
 	}
-	defer jsonFile.Close()
+	defer file.Close()
 
-	byteValue, err := io.ReadAll(jsonFile)
+	byteValue, err := io.ReadAll(file)
 	if err != nil {
 		log.Fatalf("Failed to read file: %s", err)
 	}
