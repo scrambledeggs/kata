@@ -14,7 +14,7 @@ build:
 	sam build
 
 .PHONY: deploy
-deploy: generate-endpoints
+deploy: generate-secrets generate-endpoints
 	@envs=$$(go run scripts/generate-parameter-overrides/main.go .secrets.json); \
 	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(SERVICE_NAME)-$(ENV) --no-confirm-changeset
 

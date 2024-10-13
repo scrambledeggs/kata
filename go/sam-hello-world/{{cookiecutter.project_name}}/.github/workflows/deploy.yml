@@ -1,0 +1,97 @@
+env:
+  APP_NAME: {{ cookiecutter.project_name }}
+  REGION: ap-southeast-1
+
+{% raw -%}
+name: Deploy to environment
+run-name: Deploy `${{ github.ref_name }}` on *${{ inputs.environment }}* env 🚀
+
+on:
+  workflow_call:
+    inputs:
+      tag_version:
+        type: string
+        required: false
+        description: Tag Version (Auto-Generated)
+      changelogs:
+        type: string
+        required: false
+        description: Changelogs
+      skip_slack:
+        type: boolean
+        description: Skip Slack Notification
+        default: false
+      environment:
+        type: string
+        required: true
+        description: Environment
+
+jobs:
+  DEPLOY:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Set default tag version
+        id: default-tag-version
+        run: echo "sha=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_OUTPUT
+
+      - name: Set tag version
+        id: tag-version
+        run: echo "version=${{ inputs.tag_version || steps.default-tag-version.outputs.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Echo Tag Version
+        run: echo "${{ steps.tag-version.outputs.version }}"
+
+      - name: Post to slack - Starting
+        uses: act10ns/slack@v2
+        if: ${{ !fromJSON(inputs.skip_slack) }}
+        with:
+          status: in progress
+          message: Deploying `${{ env.APP_NAME }}` to ${{ inputs.environment }} environment...
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_BACKEND_RELEASE_NOTES_URL }}
+
+      - name: Checkout to repo
+        uses: actions/checkout@v4
+
+      - name: Set AWS Credentials (Non Prod)
+        if: ${{ inputs.environment != 'production' }}
+        uses: scrambledeggs/booky-infra/.github/composite-actions/set-aws-credentials@master
+        with:
+          aws_access_key_id: ${{ secrets.NON_PROD_AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.NON_PROD_AWS_SECRET_ACCESS_KEY }}
+          app_env: ${{ inputs.environment }}
+          app_name: ${{ env.APP_NAME }}
+
+      - name: Set AWS Credentials (Prod)
+        if: ${{ inputs.environment == 'production' }}
+        uses: scrambledeggs/booky-infra/.github/composite-actions/set-aws-credentials@master
+        with:
+          aws_access_key_id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          app_env: ${{ inputs.environment }}
+          app_name: ${{ env.APP_NAME }}
+          aws_role_arn: ${{ secrets.PROD_AWS_ROLE_ARN }}
+
+      - name: Install AWS CLI SAM
+        uses: aws-actions/setup-sam@v2
+
+      - name: Deploy
+        run: make deploy ENV=${{ inputs.environment }}
+
+      - name: Post to slack - Done
+        uses: act10ns/slack@v2
+        if: ${{ !fromJSON(inputs.skip_slack) && always() }}
+        with:
+          status: ${{ job.status }}
+          message: |
+            Service: `${{ env.APP_NAME }}`
+            Version: `${{ steps.tag-version.outputs.version }}`
+            Branch: `${{ github.ref_name }}`
+            Environment: `${{ inputs.environment }}`
+            Changelogs: ${{ inputs.changelogs || 'N/A' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_BACKEND_RELEASE_NOTES_URL }}
+{% endraw -%}

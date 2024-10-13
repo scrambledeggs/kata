@@ -1,0 +1,64 @@
+name: Start Deployment
+run-name: |
+  Deploy `${{ github.ref_name }}` on
+  ${{ (fromJSON(inputs.deploy_to_test) && ' *TEST*') || '' }}
+  ${{ (fromJSON(inputs.deploy_to_staging) && ' *STAGING*') || '' }}
+  ${{ (fromJSON(inputs.deploy_to_production) && ' *PRODUCTION*') || '' }}
+  environment(s) 🚀
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_version:
+        type: string
+        required: false
+        description: Tag Version (Auto-Generated)
+      changelogs:
+        type: string
+        required: false
+        description: Changelogs
+      skip_slack:
+        type: boolean
+        description: Skip Slack Notification
+        default: false
+      deploy_to_test:
+        type: boolean
+        description: Deploy to TEST Env
+        default: false
+      deploy_to_staging:
+        type: boolean
+        description: Deploy to STAGING Env
+        default: false
+      deploy_to_production:
+        type: boolean
+        description: Deploy to PRODUCTION Env
+        default: false
+
+jobs:
+  deploy-test:
+    if: ${{ fromJSON(inputs.deploy_to_test) }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      tag_version: ${{ inputs.tag_version }}
+      changelogs: ${{ inputs.changelogs }}
+      skip_slack: ${{ fromJSON(inputs.skip_slack) }}
+      environment: test
+    secrets: inherit
+  deploy-staging:
+    if: ${{ fromJSON(inputs.deploy_to_staging) }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      tag_version: ${{ inputs.tag_version }}
+      changelogs: ${{ inputs.changelogs }}
+      skip_slack: ${{ fromJSON(inputs.skip_slack) }}
+      environment: staging
+    secrets: inherit
+  deploy-production:
+    if: ${{ fromJSON(inputs.deploy_to_production) }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      tag_version: ${{ inputs.tag_version }}
+      changelogs: ${{ inputs.changelogs }}
+      skip_slack: ${{ fromJSON(inputs.skip_slack) }}
+      environment: production
+    secrets: inherit
