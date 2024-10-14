@@ -57,7 +57,7 @@ func main() {
 		panic(fmt.Sprintf("Error while marshaling YAML: %v", err))
 	}
 
-	path := flag.String("file", DEFAULT_PATH, "File Path")
+	path := flag.String("path", DEFAULT_PATH, "File Path")
 	flag.Parse()
 
 	err = os.WriteFile(*path, yamlData, 0644)
