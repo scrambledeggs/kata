@@ -36,6 +36,15 @@ $ make deploy ENV=test
 
 Template has a ready github actions that can deploy already, just adjust depending on your projects needs.
 
+### air
+
+Template implements [air](https://github.com/air-verse/air) for live-reloading, this works in the background
+
+Execute this makefile command for local development with air live-reloading
+```
+$ make dev-watch
+```
+
 ### AllEndpoints - the /endpoints endpoint
 
 Template already has a ready endpoint for our Booky auth under AllEndpoints handler

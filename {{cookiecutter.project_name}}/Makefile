@@ -22,3 +22,8 @@ deploy: generate-secrets generate-endpoints
 dev: generate-endpoints
 	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
 	sam local start-api --port 3000 --parameter-overrides "$$envs"
+
+.PHONY: dev-watch
+dev-watch: generate-endpoints
+	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
+	(air &) && sam local start-api --port 3000 --parameter-overrides "$$envs"
