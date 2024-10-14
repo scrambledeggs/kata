@@ -2,13 +2,13 @@
 
 ~~This repository contains the application templates.~~
 
-This repo currently only contains a repo for [AWS SAM](https://aws.amazon.com/serverless/sam/) in [golang](https://go.dev/).
+This repo currently only contains a template for [AWS SAM](https://aws.amazon.com/serverless/sam/) in [golang](https://go.dev/).
 
 ## Features
 
-### Sample hello world
+### HelloWorldV1 - the sample endpoint
 
-Tempalte has a basic handler HelloWorld under `/handlers/HelloWorldV1` accessible under `/v1/hello-world`
+Template has a basic handler HelloWorld under `/handlers/HelloWorldV1` accessible under `/v1/hello-world`
 
 ### API Gateway
 
