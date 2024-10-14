@@ -32,7 +32,7 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 1. Run the following commands
 ```bash
-$ go mod init [project-name]
+$ go mod init {{ cookiecutter.project_name }}
 $ go mod tidy
 ```
 2. This is provided with .secrets.local.json and has empty ENV variables
