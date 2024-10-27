@@ -52,7 +52,8 @@ $ go mod tidy
 }
 ```
 3. This is then read by `Makefile` using `generate-parameter-overrides`
-4. Development (`make dev`) uses `.secrets.local.json`
+4. Development `make dev` uses `.secrets.local.json`
+    4.1. Optionally use `make dev-watch` to use live-reloading while developing
 5. Deployment (`make deploy`) uses (and builds) using `.secrets.json`
 
 ### Local development
@@ -64,6 +65,7 @@ $ go mod tidy
 ```bash
 $ make dev
 ```
+    2.1. Optionally use `make dev-watch` for live-reloading while developing
 
 If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/v1/hello-world`
 
