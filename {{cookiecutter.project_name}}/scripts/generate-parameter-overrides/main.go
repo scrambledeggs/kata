@@ -1,3 +1,7 @@
+// generate-parameter-overrides prints a string read from .secrets.json
+// in a format used by sam cli --parameter-overrides
+// output: ParameterKey=Key1,ParameterValue=value1
+
 package main
 
 import (

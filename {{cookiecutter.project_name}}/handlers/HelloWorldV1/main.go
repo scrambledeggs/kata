@@ -19,7 +19,7 @@ func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		greeting = fmt.Sprintf("Hello, %s! In %s env\n", sourceIP, os.Getenv("APP_ENV"))
 	}
 
-	logs.Info("Greet", greeting)
+	logs.Print("Greet", greeting)
 
 	return events.APIGatewayProxyResponse{
 		Body:       greeting,

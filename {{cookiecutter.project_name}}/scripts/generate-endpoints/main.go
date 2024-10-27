@@ -1,3 +1,15 @@
+// generate-endpoints creates the file for AllEndpoints to read
+// generates a yaml file derived from docs/api_contract.yaml
+//
+// YAML structure:
+// paths:
+//   /v1/path/{id}/subpath:
+//     post:
+//       [more here]
+//   /v1/path:
+//     get:
+//       [more here]
+
 package main
 
 import (
@@ -8,15 +20,6 @@ import (
 
 	"gopkg.in/yaml.v3"
 )
-
-// YAML structure:
-// paths:
-//   /v1/merchants/{merchant_id}/stores:
-//     post:
-//       [more here]
-//   /v1/merchants:
-//     get:
-//       [more here]
 
 const DEFAULT_PATH = ".aws-sam/build/AllEndpoints/endpoints.yml"
 

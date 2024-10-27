@@ -1,8 +1,7 @@
-package main
+// generate-secrets generates a file .secrets.json
+// derived from AWS Secrets Manager
 
-// Use this code snippet in your app.
-// If you need more information about configurations or implementing the sample code, visit the AWS docs:
-// https://aws.github.io/aws-sdk-go-v2/docs/getting-started/
+package main
 
 import (
 	"context"
