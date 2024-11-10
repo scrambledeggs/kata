@@ -1,6 +1,7 @@
 {
     "author": "Project author",
     "project_name": "Name of the project",
+    "camelcase_project_name": "{{ cookiecutter.project_name|title|replace('-', '')|replace('_', '') }}",
     "_copy_without_render": [
         ".gitignore",
         ".github/workflows/deploy-starter.yml"

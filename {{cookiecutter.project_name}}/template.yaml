@@ -16,11 +16,11 @@ Metadata:
     SemanticVersion: 0.0.1
 
 Parameters:
+  AlternateDomainName:
+    Type: String
   AppEnv:
     Type: String
     Default: "test"
-  AuthorizerFunctionArn:
-    Type: String
   CertificateArn:
     Type: String
   CorsAllowedHeaders:
@@ -32,8 +32,6 @@ Parameters:
   CorsAllowedOrigins:
     Type: String
     Default: "*"
-  HostedZoneId:
-    Type: String
   SecurityGroups:
     Type: String
   Subnets:
@@ -72,33 +70,58 @@ Globals:
       AllowOrigin: !Join ["", ["'", !Ref CorsAllowedOrigins, "'"]]
 
 Resources:
-  ApiGateway:
-    Type: AWS::Serverless::Api
+  CachePolicy:
+    Type: AWS::CloudFront::CachePolicy
     Properties:
-      StageName: !Ref AppEnv
-      GatewayResponses:
-        DEFAULT_4xx:
-          ResponseParameters:
+      CachePolicyConfig:
+        Name: {{ cookiecutter.camelcase_project_name }}CachePolicy
+        DefaultTTL: 86400
+        MaxTTL: 86400
+        MinTTL: 1
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+          HeadersConfig:
+            HeaderBehavior: whitelist
             Headers:
-              Access-Control-Expose-Headers: "'WWW-Authenticate'"
-              Access-Control-Allow-Origin: !Join ["", ["'", !Ref CorsAllowedOrigins, "'"]]
-      Auth:
-        DefaultAuthorizer: ApiKeyAuthorizer
-        AddDefaultAuthorizerToCorsPreflight: false
-        Authorizers:
-          ApiKeyAuthorizer:
-            FunctionPayloadType: REQUEST
-            FunctionArn: !Ref AuthorizerFunctionArn
-            Identity:
-              Headers:
-                - x-api-key
-              ReauthorizeEvery: 0
-      Domain:
-        DomainName: !If [ProdEnv, {{ cookiecutter.project_name }}.booky.ph, !Join ["-", [!Ref AppEnv, "{{ cookiecutter.project_name }}.booky.ph"]]]
-        EndpointConfiguration: REGIONAL
-        CertificateArn: !Ref CertificateArn
-        Route53:
-          HostedZoneId: !Ref HostedZoneId
+              - Origin
+              - x-user-token
+          QueryStringsConfig:
+            QueryStringBehavior: all
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Aliases:
+          - !Ref AlternateDomainName
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertificateArn
+          SslSupportMethod: sni-only
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: ServerlessRestApi
+          CachePolicyId: !Ref CachePolicy
+          Compress: true
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+            - POST
+            - PUT
+            - DELETE
+            - PATCH # Added all methods
+          CachedMethods:
+            - GET
+            - HEAD # Cache GET and HEAD methods only
+        Origins:
+          - Id: ServerlessRestApi
+            DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: /Prod
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
 
   AllEndpoints:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -116,7 +139,6 @@ Resources:
           Properties:
             Path: /endpoints
             Method: GET
-            RestApiId: !Ref ApiGateway
 
   HelloWorldV1:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -134,17 +156,44 @@ Resources:
           Properties:
             Path: /v1/hello-world
             Method: GET
-            RestApiId: !Ref ApiGateway
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM_1: VALUE
+
+  CachedWorldV1:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: handlers/CachedWorldV1
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/cached-world
+            Method: GET
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          PARAM_1: ANOTHER_VALUE
+      Policies:
+        - CloudFrontFullAccess
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   HelloWorldV1Arn:
-    Description: "First Lambda Function ARN"
+    Description: "Hello Lambda Function ARN"
     Value: !GetAtt HelloWorldV1.Arn
     Export:
       Name: !If [ProdEnv, "HelloWorldV1Arn", !Join ["-", [!Ref AppEnv, "HelloWorldV1Arn"]]]
+
+  CachedWorldV1Arn:
+    Description: "Cached Lambda Function ARN"
+    Value: !GetAtt CachedWorldV1.Arn
+    Export:
+      Name: !If [ProdEnv, "CachedWorldV1", !Join ["-", [!Ref AppEnv, "CachedWorldV1"]]]
