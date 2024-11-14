@@ -1,8 +1,9 @@
 package main
 
 import (
+	"math/rand"
 	"net/http"
-	"os"
+	"strconv"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -12,16 +13,10 @@ import (
 )
 
 func handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	fileData, err := os.ReadFile("./cache_thingy.txt") // Replace with actual file path
-	if err != nil {
-		return r.SingleErrorResponse(http.StatusInternalServerError, r.ErrorResponseBody{
-			Message: "Failed to read file: " + err.Error(),
-			Code:    "INTERNAL_SERVER_ERROR",
-		})
-	}
+	randomNumber := rand.Intn(100) + 1
+	randomNumberStr := strconv.Itoa(randomNumber)
 
-	greeting := string(fileData)
-
+	greeting := "Random number saved: " + randomNumberStr
 	logs.Print("Greet", greeting)
 	return r.SingleSuccessResponse(http.StatusOK, greeting)
 }
