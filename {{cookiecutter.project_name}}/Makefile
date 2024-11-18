@@ -28,6 +28,11 @@ dev-watch: generate-endpoints
 	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
 	(air &) && sam local start-api --port 3000 --parameter-overrides "$$envs"
 
+.PHONY: dev-deploy
+dev-deploy: generate-endpoints
+	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
+	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(SERVICE_NAME)-$(ENV) --no-confirm-changeset
+
 .PHONY: build-watch
 build-watch:
 	@endpoints=$$(cat .aws-sam/build/AllEndpoints/endpoints.yml); \

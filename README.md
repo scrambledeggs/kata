@@ -69,3 +69,9 @@ Since SAM can't have multiple template yet in one repo as of this writing, I opt
 ## Contributing
 
 We welcome issue reports and pull requests to help improve these application templates.
+
+## Road ahead (TODO):
+
+1. Find a way to add `!Ref CloudFrontDistribution` to get the ID created with CloudFrontDistribution and use it in Functions that would use to invalidate CloudFront caches in DISTRIBUTION_ID environment variable.
+- Find a way to add it without circular dependency <- that's the error we get right now
+2. Automate creation of Route53->Hosted Zone->Record

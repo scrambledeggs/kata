@@ -32,6 +32,8 @@ Parameters:
   CorsAllowedOrigins:
     Type: String
     Default: "*"
+  DistributionId:
+    Type: String
   SecurityGroups:
     Type: String
   Subnets:
@@ -137,6 +139,17 @@ Resources:
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
 
+  # TODO: Create Route53 HostedZone Record dynamically
+  # Route53RecordSet:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     HostedZoneId: Z118YDPZSVV5TP
+  #     Name: test-foobar.booky.ph
+  #     ResourceRecords:
+  #     - d27tg0s07b9g55.cloudfront.net
+  #     TTL: 300
+  #     Type: CNAME
+
   AllEndpoints:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Metadata:
@@ -193,21 +206,39 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM_1: ANOTHER_VALUE
+
+  InvalidateCachedWorldV1:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: handlers/InvalidateCachedWorldV1
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      Events:
+        CatchAll:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /v1/invalidate-cached-world
+            Method: POST
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          DISTRIBUTION_ID: !Ref DistributionId # TODO: Find a way to get !Ref CloudFrontDistribution (CloudFrontDistributionID) without circular dependency
       Policies:
         - CloudFrontFullAccess
+    # DependsOn: CloudFrontDistribution # TODO: This could help on CloudFrontDistributionID
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldV1Arn:
-    Description: "Hello Lambda Function ARN"
-    Value: !GetAtt HelloWorldV1.Arn
-    Export:
-      Name: !If [ProdEnv, "HelloWorldV1Arn", !Join ["-", [!Ref AppEnv, "HelloWorldV1Arn"]]]
+  CloudFrontDistributionId:
+    Description: "CloudFront Distribution ID"
+    Value: !Ref CloudFrontDistribution
 
-  CachedWorldV1Arn:
-    Description: "Cached Lambda Function ARN"
-    Value: !GetAtt CachedWorldV1.Arn
-    Export:
-      Name: !If [ProdEnv, "CachedWorldV1", !Join ["-", [!Ref AppEnv, "CachedWorldV1"]]]
+  # TODO: Get "Distribution Domain Name" for Route53 HostedZone "Route traffic to"
+  # CloudFrontDistributionDomainName:
+  #   Description: "CloudFront Distribution Domain Name"
+  #   Value: !Ref CloudFrontDistribution.DomainName
