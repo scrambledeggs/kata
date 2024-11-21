@@ -96,7 +96,7 @@ paths:
           $ref: '#/components/responses/not_found'
 
   /v1/invalidate-cached-world:
-    get:
+    post:
       operationId: invalidateCachedWorld
       description: Invalidate CloudFront cache of cachedWorld
       summary: Invalidate cachedWorld

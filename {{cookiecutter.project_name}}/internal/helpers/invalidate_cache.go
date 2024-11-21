@@ -7,7 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudfront"
-	"github.com/scrambledeggs/booky-go-common/logs"
 )
 
 func InvalidateCache(paths []string) (*cloudfront.CreateInvalidationOutput, error) {
@@ -16,7 +15,6 @@ func InvalidateCache(paths []string) (*cloudfront.CreateInvalidationOutput, erro
 
 	awsPaths := pathsToAWSPaths(paths)
 
-	logs.Info("paths", awsPaths)
 	input := &cloudfront.CreateInvalidationInput{
 		DistributionId: aws.String(os.Getenv("DISTRIBUTION_ID")),
 		InvalidationBatch: &cloudfront.InvalidationBatch{
