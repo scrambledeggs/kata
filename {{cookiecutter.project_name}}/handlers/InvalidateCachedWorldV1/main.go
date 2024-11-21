@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"foobar/internal/helpers"
+	"{{ cookiecutter.project_name }}/internal/helpers"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
