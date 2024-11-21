@@ -238,7 +238,6 @@ Outputs:
     Description: "CloudFront Distribution ID"
     Value: !Ref CloudFrontDistribution
 
-  # TODO: Get "Distribution Domain Name" for Route53 HostedZone "Route traffic to"
-  # CloudFrontDistributionDomainName:
-  #   Description: "CloudFront Distribution Domain Name"
-  #   Value: !Ref CloudFrontDistribution.DomainName
+  CloudFrontDistributionDomainName:
+    Description: "CloudFront Distribution Domain Name"
+    Value: !GetAtt CloudFrontDistribution.DomainName
