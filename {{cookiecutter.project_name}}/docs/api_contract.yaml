@@ -65,10 +65,48 @@ paths:
       responses:
         200:
           description: Successfully found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/create_report_transaction_body'
+        400:
+          $ref: '#/components/responses/bad_request'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        403:
+          $ref: '#/components/responses/forbidden'
+        404:
+          $ref: '#/components/responses/not_found'
+
+  /v1/cached-world:
+    get:
+      operationId: cachedWorld
+      description: Generates a random number and caches the page
+      summary: Generate number and cache page
+      tags:
+        - WIP
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Successfully generated
+        400:
+          $ref: '#/components/responses/bad_request'
+        401:
+          $ref: '#/components/responses/unauthorized'
+        403:
+          $ref: '#/components/responses/forbidden'
+        404:
+          $ref: '#/components/responses/not_found'
+
+  /v1/invalidate-cached-world:
+    post:
+      operationId: invalidateCachedWorld
+      description: Invalidate CloudFront cache of cachedWorld
+      summary: Invalidate cachedWorld
+      tags:
+        - WIP
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: Successfully invalidated
         400:
           $ref: '#/components/responses/bad_request'
         401:
