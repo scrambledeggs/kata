@@ -100,7 +100,20 @@ $ make deploy ENV=test
 - Deploy to TEST Env
 - Run workflow
 
-### Testing
+### Gacha to make CloudFront working for now
+1. After deploying, copy Output->CloudFrontDistributionId to secrets->DistributionId, redeploy
+2. Create Route53 -> Hosted Zone -> Record
+- Choose Route53
+- Hosted Zones
+- booky.ph
+- Create Record
+    - Record name: [env]-[{{ cookiecutter.project_name }}]
+    - Record type: CNAME
+    - Value: Output->CloudFrontDistributionDomainName
+    - TTL: 300
+    - Routing Policy: Simple
+
+## Testing
 
 We use `testing` package that is built-in in Golang and you can simply run the following command to run our tests:
 
