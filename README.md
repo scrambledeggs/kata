@@ -4,6 +4,17 @@
 
 This repo currently only contains a template for [AWS SAM](https://aws.amazon.com/serverless/sam/) in [golang](https://go.dev/).
 
+## How to use
+
+1. Execute from root projects folder
+```
+$ sam init
+```
+
+2. Choose "Custom Template Location"
+3. Enter `https://github.com/scrambledeggs/kata`
+4. Answer questions (has defaults)
+
 ## Features
 
 ### HelloWorldV1 - the sample endpoint
