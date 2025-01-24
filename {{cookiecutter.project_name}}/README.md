@@ -65,7 +65,7 @@ $ go mod tidy
 ```bash
 $ make dev
 ```
-    2.1. Optionally use `make dev-watch` for live-reloading while developing
+2.1. Optionally use `make dev-watch` for live-reloading while developing
 
 If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/v1/hello-world`
 

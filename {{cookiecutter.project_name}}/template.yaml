@@ -21,6 +21,8 @@ Parameters:
   AppEnv:
     Type: String
     Default: "test"
+  AuthorizerFunctionArn:
+    Type: String
   CertificateArn:
     Type: String
   CorsAllowedHeaders:
@@ -85,6 +87,32 @@ Resources:
       ResourceGroupName:
         Ref: ApplicationResourceGroup
       AutoConfigurationEnabled: "true"
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Tags:
+        Usage: tags
+        Environment: !If [ProdEnv, prod, non-prod]
+      StageName: !Ref AppEnv
+      GatewayResponses:
+        DEFAULT_4xx:
+          ResponseParameters:
+            Headers:
+              Access-Control-Expose-Headers: "'WWW-Authenticate'"
+              Access-Control-Allow-Origin:
+                !Join ["", ["'", !Ref CorsAllowedOrigins, "'"]]
+      Auth:
+        DefaultAuthorizer: ApiKeyAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          ApiKeyAuthorizer:
+            FunctionPayloadType: REQUEST
+            FunctionArn: !Ref AuthorizerFunctionArn
+            Identity:
+              Headers:
+                - x-api-key
+              ReauthorizeEvery: 0
 
   CachePolicy:
     Type: AWS::CloudFront::CachePolicy
@@ -164,6 +192,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref ApiGateway
             Path: /endpoints
             Method: GET
 
@@ -181,6 +210,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref ApiGateway
             Path: /v1/hello-world
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
@@ -201,6 +231,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref ApiGateway
             Path: /v1/cached-world
             Method: GET
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
@@ -221,6 +252,7 @@ Resources:
         CatchAll:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
+            RestApiId: !Ref ApiGateway
             Path: /v1/invalidate-cached-world
             Method: POST
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
