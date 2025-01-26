@@ -15,6 +15,9 @@ $ sam init
 3. Enter `https://github.com/scrambledeggs/kata`
 4. Answer questions (has defaults)
 
+5. Answer other options
+6. If choose 'n' on `with_own_db`, `db_migration` is irrelevant
+
 ## Features
 
 ### HelloWorldV1 - the sample endpoint

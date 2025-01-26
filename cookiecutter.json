@@ -2,8 +2,8 @@
     "author": "Potato Wiigo",
     "project_name": "awesome-project",
     "camelcase_project_name": "{{ cookiecutter.project_name|title|replace('-', '')|replace('_', '') }}",
-    "_copy_without_render": [
-        ".gitignore",
-        ".github/workflows/deploy-starter.yml"
-    ]
+    "with_own_db": "y",
+    "db_migration": ["goose", "dbmate", "n/a"],
+
+    "_copy_without_render": [".gitignore", ".github/workflows/deploy-starter.yml"]
 }

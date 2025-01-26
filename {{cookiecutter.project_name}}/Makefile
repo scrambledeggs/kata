@@ -48,3 +48,29 @@ build-watch:                                   ## Build command executed by air.
 	@endpoints=$$(cat .aws-sam/build/AllEndpoints/endpoints.yml); \
 	sam build; \
 	echo "$$endpoints" > .aws-sam/build/AllEndpoints/endpoints.yml
+
+{% if cookiecutter.with_own_db == "y" -%}
+.PHONY: db-new-migration
+db-new-migration:                           ## Create a new migration file opt. NAME=new_migration_file
+{%- if cookiecutter.db_migration == "goose" %}
+	goose -dir db/migrations create $(NAME) sql
+{%- elif cookiecutter.db_migration == "dbmate" %}
+	dbmate --env DATABASE_URL --env-file .env --migrations-dir ./db/migrations --migrations-table schema_migrations --no-dump-schema new $(NAME)
+{%- endif %}
+
+.PHONY: db-up
+db-up:                                         ## Migrate the DB to the most recent version available
+{%- if cookiecutter.db_migration == "goose" %}
+	goose -dir ./db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
+{%- elif cookiecutter.db_migration == "dbmate" %}
+	dbmate --env DATABASE_URL --env-file .env --migrations-dir ./db/migrations --migrations-table schema_migrations --no-dump-schema migrate
+{%- endif %}
+
+.PHONY: db-down
+db-down:                                       ## Roll back the migration version by 1
+{%- if cookiecutter.db_migration == "goose" %}
+	goose -dir ./db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down
+{%- elif cookiecutter.db_migration == "dbmate" %}
+	dbmate --env DATABASE_URL --env-file .env --migrations-dir ./db/migrations --migrations-table schema_migrations --no-dump-schema down
+{%- endif %}
+{%- endif %}
