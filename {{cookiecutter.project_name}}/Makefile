@@ -62,18 +62,22 @@ db-add:                                        ## Add a new migration file opt. 
 .PHONY: db-up
 db-up:                                         ## Migrate the DB to the most recent version available
 {%- if cookiecutter.db_migration == "goose" %}
-	GOOSE_DBSTRING=$(shell cat .secrets.local.json | jq .DatabaseURL) \
-	goose -dir db/migrations postgres $(GOOSE_DBSTRING) up
+	GOOSE_DRIVER=postgres \
+	GOOSE_DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	goose -dir db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	dbmate --env DATABASE_URL --env-file .env --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema migrate
+	DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	dbmate --env $(DBSTRING) --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema migrate
 {%- endif %}
 
 .PHONY: db-down
 db-down:                                       ## Roll back the migration version by 1
 {%- if cookiecutter.db_migration == "goose" %}
-	GOOSE_DBSTRING=$(shell cat .secrets.local.json | jq .DatabaseURL) \
-	goose -dir db/migrations postgres $(GOOSE_DBSTRING) down
+	GOOSE_DRIVER=postgres \
+	GOOSE_DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	goose -dir db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	dbmate --env DATABASE_URL --env-file .env --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema down
+	DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	dbmate --env $(DBSTRING) --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema down
 {%- endif %}
 {%- endif %}

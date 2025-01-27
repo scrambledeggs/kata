@@ -27,6 +27,7 @@ if "{{ cookiecutter.db_migration }}" == "goose":
     print("- Add 'DatabaseURL' to your secrets.local.json and add your database URL")
 elif "{{ cookiecutter.db_migration }}" == "dbmate":
     print("- Install dbmate (https://github.com/amacneil/dbmate?tab=readme-ov-file#installation)")
+    print("- Add 'DatabaseURL' to your secrets.local.json and add your database URL")
 print("- Run `make dev` to start the local development environment.")
 print("  - Optionally, use `make dev-watch` for live reloading.")
 
