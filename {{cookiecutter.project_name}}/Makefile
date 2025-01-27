@@ -50,27 +50,30 @@ build-watch:                                   ## Build command executed by air.
 	echo "$$endpoints" > .aws-sam/build/AllEndpoints/endpoints.yml
 
 {% if cookiecutter.with_own_db == "y" -%}
-.PHONY: db-new-migration
-db-new-migration:                           ## Create a new migration file opt. NAME=new_migration_file
+.PHONY: db-add
+db-add:                                        ## Add a new migration file opt. NAME=new_migration_file
+	@if [ -z "$(NAME)" ]; then echo "Error: Please provide NAME for the migration file."; exit 1; fi
 {%- if cookiecutter.db_migration == "goose" %}
 	goose -dir db/migrations create $(NAME) sql
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	dbmate --env DATABASE_URL --env-file .env --migrations-dir ./db/migrations --migrations-table schema_migrations --no-dump-schema new $(NAME)
+	dbmate --migrations-dir db/migrations new $(NAME)
 {%- endif %}
 
 .PHONY: db-up
 db-up:                                         ## Migrate the DB to the most recent version available
 {%- if cookiecutter.db_migration == "goose" %}
-	goose -dir ./db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
+	GOOSE_DBSTRING=$(shell cat .secrets.local.json | jq .DatabaseURL) \
+	goose -dir db/migrations postgres $(GOOSE_DBSTRING) up
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	dbmate --env DATABASE_URL --env-file .env --migrations-dir ./db/migrations --migrations-table schema_migrations --no-dump-schema migrate
+	dbmate --env DATABASE_URL --env-file .env --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema migrate
 {%- endif %}
 
 .PHONY: db-down
 db-down:                                       ## Roll back the migration version by 1
 {%- if cookiecutter.db_migration == "goose" %}
-	goose -dir ./db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down
+	GOOSE_DBSTRING=$(shell cat .secrets.local.json | jq .DatabaseURL) \
+	goose -dir db/migrations postgres $(GOOSE_DBSTRING) down
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	dbmate --env DATABASE_URL --env-file .env --migrations-dir ./db/migrations --migrations-table schema_migrations --no-dump-schema down
+	dbmate --env DATABASE_URL --env-file .env --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema down
 {%- endif %}
 {%- endif %}

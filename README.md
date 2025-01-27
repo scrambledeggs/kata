@@ -14,9 +14,7 @@ $ sam init
 2. Choose "Custom Template Location"
 3. Enter `https://github.com/scrambledeggs/kata`
 4. Answer questions (has defaults)
-
-5. Answer other options
-6. If choose 'n' on `with_own_db`, `db_migration` is irrelevant
+5. If choose 'n' on `with_own_db`, `db_migration` is irrelevant
 
 ## Features
 
