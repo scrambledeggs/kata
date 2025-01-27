@@ -10,6 +10,8 @@ subprocess.run(['go', 'mod', 'tidy'], check=True)
 
 REMOVE_PATHS = [
     '{% if cookiecutter.with_own_db == "n" %} db/migrations/ {% endif %}',
+    '{% if cookiecutter.use_sqlc == "n" %} db/queries/ {% endif %}',
+    '{% if cookiecutter.use_sqlc == "n" %} sqlc.yaml {% endif %}',
 ]
 
 for path in REMOVE_PATHS:
@@ -28,6 +30,8 @@ if "{{ cookiecutter.db_migration }}" == "goose":
 elif "{{ cookiecutter.db_migration }}" == "dbmate":
     print("- Install dbmate (https://github.com/amacneil/dbmate?tab=readme-ov-file#installation)")
     print("- Add 'DatabaseURL' to your secrets.local.json and add your database URL")
+if "{{ cookiecutter.use_sqlc }}":
+    print("- Install sqlc (https://docs.sqlc.dev/en/latest/overview/install.html)")
 print("- Run `make dev` to start the local development environment.")
 print("  - Optionally, use `make dev-watch` for live reloading.")
 

@@ -81,3 +81,9 @@ db-down:                                       ## Roll back the migration versio
 	dbmate --env $(DBSTRING) --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema down
 {%- endif %}
 {%- endif %}
+
+{% if cookiecutter.use_sqlc -%}
+.PHONY: sqlc-gen
+sqlc-gen:                                      ## Roll back the migration version by 1
+	sqlc generate
+{%- endif %}

@@ -4,6 +4,10 @@
     "camelcase_project_name": "{{ cookiecutter.project_name|title|replace('-', '')|replace('_', '') }}",
     "with_own_db": "y",
     "db_migration": ["goose", "dbmate", "n/a"],
+    "use_sqlc": "y",
 
-    "_copy_without_render": [".gitignore", ".github/workflows/deploy-starter.yml"]
+    "_copy_without_render": [
+        ".gitignore",
+        ".github/workflows/deploy-starter.yml"
+    ]
 }
