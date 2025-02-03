@@ -18,10 +18,6 @@ $ sam init
 
 ## Features
 
-### HelloWorldV1 - the sample endpoint
-
-Template has a basic handler HelloWorld under `/handlers/HelloWorldV1` accessible under `/v1/hello-world`
-
 ### API Gateway
 
 Template has an API Gateway included that points to (test-/staging-)[project_name] upon deployment
@@ -56,6 +52,20 @@ Execute this makefile command for local development with air live-reloading
 ```
 $ make dev-watch
 ```
+
+### goose/dbmate
+
+Template has options for migration handlers - [goose](https://github.com/pressly/goose) or [dbmate](https://github.com/amacneil/dbmate?tab=readme-ov-file)
+
+Just install which is preferred to use.
+
+### sqlc
+
+Template also has an option for [sqlc](https://sqlc.dev/), and has a basic setup for it. Reads `db/migrations` but can change file `sqlc.yaml` for other configurations.
+
+### HelloWorldV1 - the sample endpoint
+
+Template has a basic handler HelloWorld under `/handlers/HelloWorldV1` accessible under `/v1/hello-world`
 
 ### AllEndpoints - the /endpoints endpoint
 

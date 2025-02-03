@@ -64,10 +64,10 @@ db-up:                                         ## Migrate the DB to the most rec
 {%- if cookiecutter.db_migration == "goose" %}
 	GOOSE_DRIVER=postgres \
 	GOOSE_DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
-	goose -dir db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) up
+	goose -dir db/migrations up
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
-	dbmate --env $(DBSTRING) --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema migrate
+	DATABASE_URL=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	dbmate --migrations-dir db/migrations --no-dump-schema migrate
 {%- endif %}
 
 .PHONY: db-down
@@ -75,15 +75,15 @@ db-down:                                       ## Roll back the migration versio
 {%- if cookiecutter.db_migration == "goose" %}
 	GOOSE_DRIVER=postgres \
 	GOOSE_DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
-	goose -dir db/migrations $(GOOSE_DRIVER) $(GOOSE_DBSTRING) down
+	goose -dir db/migrations down
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
-	dbmate --env $(DBSTRING) --migrations-dir db/migrations --migrations-table schema_migrations --no-dump-schema down
+	DATABASE_URL=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	dbmate --migrations-dir db/migrations --no-dump-schema down
 {%- endif %}
 {%- endif %}
 
 {% if cookiecutter.use_sqlc -%}
 .PHONY: sqlc-gen
-sqlc-gen:                                      ## Roll back the migration version by 1
+sqlc-gen:                                      ## Generate sqlc code in sqlc.yaml
 	sqlc generate
 {%- endif %}
