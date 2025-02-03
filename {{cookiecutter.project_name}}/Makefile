@@ -43,6 +43,12 @@ dev-deploy: generate-endpoints                 ## Deploy project, will create pa
 	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
 	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(SERVICE_NAME)-$(ENV) --no-confirm-changeset
 
+.PHONY: dev-invoke
+dev-invoke:                                    ## Invoke one-time a lambda NAME function with data from the EVENT (optional)
+	@if [ -z "$(NAME)" ]; then echo "Error: Please provide NAME of lambda to invoke."; exit 1; fi
+	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
+	sam local invoke $(NAME) --parameter-overrides "$$envs"  --event $(EVENT)
+
 .PHONY: build-watch
 build-watch:                                   ## Build command executed by air.toml every live reload
 	@endpoints=$$(cat .aws-sam/build/AllEndpoints/endpoints.yml); \
