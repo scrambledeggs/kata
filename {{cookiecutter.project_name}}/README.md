@@ -40,10 +40,10 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 {
   "AlternateDomainName": "test-{{ cookiecutter.project_name }}.booky.ph",
   "AppEnv": "test",
-  "CertificateArn": "arn:aws:acm:us-east-1:334139474753:certificate/5da2acfc-a6f9-4f2f-9fd2-105eb706af50",
-  "DistributionId": "E3TIC4MBWHX683",
-  "SecurityGroups": "sg-0fc1e2b2d963b7a41,sg-00318aa97b8e36a17",
-  "Subnets": "subnet-0fe69bd7295a6da11"
+  "CertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/5da5njye-this-test-yeah-1eb057af5006",
+  "DistributionId": "E3TESTX633ONLY",
+  "SecurityGroups": "sg-test32bae2b93test,sg-test32bae2b93just",
+  "Subnets": "subnet-test32bae2b93test"
 }
 ```
 3. This is then read by `Makefile` using `generate-parameter-overrides`
