@@ -4,11 +4,19 @@
 
 This repo currently only contains a template for [AWS SAM](https://aws.amazon.com/serverless/sam/) in [golang](https://go.dev/).
 
+## How to use
+
+1. Execute from root projects folder
+```
+$ sam init
+```
+
+2. Choose "Custom Template Location"
+3. Enter `https://github.com/scrambledeggs/kata`
+4. Answer questions (has defaults)
+5. If choose 'n' on `with_own_db`, `db_migration` is irrelevant
+
 ## Features
-
-### HelloWorldV1 - the sample endpoint
-
-Template has a basic handler HelloWorld under `/handlers/HelloWorldV1` accessible under `/v1/hello-world`
 
 ### API Gateway
 
@@ -44,6 +52,20 @@ Execute this makefile command for local development with air live-reloading
 ```
 $ make dev-watch
 ```
+
+### goose/dbmate
+
+Template has options for migration handlers - [goose](https://github.com/pressly/goose) or [dbmate](https://github.com/amacneil/dbmate?tab=readme-ov-file)
+
+Just install which is preferred to use.
+
+### sqlc
+
+Template also has an option for [sqlc](https://sqlc.dev/), and has a basic setup for it. Reads `db/migrations` but can change file `sqlc.yaml` for other configurations.
+
+### HelloWorldV1 - the sample endpoint
+
+Template has a basic handler HelloWorld under `/handlers/HelloWorldV1` accessible under `/v1/hello-world`
 
 ### AllEndpoints - the /endpoints endpoint
 

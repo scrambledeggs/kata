@@ -30,25 +30,20 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 ## Setup process
 
-1. Run the following commands
-```bash
-$ go mod init {{ cookiecutter.project_name }}
-$ go mod tidy
-```
-2. This is provided with .secrets.local.json and has empty ENV variables
+1. This is provided with .secrets.local.json and has empty ENV variables
 
 ### Environment
 
 1. Default environment handler is in [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). `generate-secrets` downloads the environment and generates .secrets.json
-2. Format is in JSON format, keys should be in CamelCase
+2. Format is in JSON format, keys should be in CamelCase (sample data)
 ```json
 {
-    "AppEnv": "test",
-    "AuthorizerFunctionArn": "",
-    "CertificateArn": "",
-    "HostedZoneId": "",
-    "SecurityGroups": "",
-    "Subnets": ""
+  "AlternateDomainName": "test-{{ cookiecutter.project_name }}.booky.ph",
+  "AppEnv": "test",
+  "CertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/5da5njye-this-test-yeah-1eb057af5006",
+  "DistributionId": "E3TESTX633ONLY",
+  "SecurityGroups": "sg-test32bae2b93test,sg-test32bae2b93just",
+  "Subnets": "subnet-test32bae2b93test"
 }
 ```
 3. This is then read by `Makefile` using `generate-parameter-overrides`
@@ -65,7 +60,7 @@ $ go mod tidy
 ```bash
 $ make dev
 ```
-    2.1. Optionally use `make dev-watch` for live-reloading while developing
+  2.1. Optionally use `make dev-watch` for live-reloading while developing
 
 If the previous command ran successfully you should now be able to hit the following local endpoint to invoke your function `http://localhost:3000/v1/hello-world`
 
