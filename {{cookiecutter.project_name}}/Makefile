@@ -5,7 +5,7 @@
 ## Use spaces (not tabs) to align the commands and help comment properly.
 ## ----------------------------------------------------------------------
 
-SERVICE_NAME = {{ cookiecutter.project_name }}
+PROJECT_NAME = {{ cookiecutter.project_name }}
 AWS_REGION = ap-southeast-1
 
 help:                                          ## Show this help.
@@ -26,7 +26,7 @@ build:                                         ## Build project in to .aws-sam
 .PHONY: deploy
 deploy: generate-secrets generate-endpoints    ## Deploy project, will create parameter-overrides based on .secrets.json taken from AWS Secrets Manager
 	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.json); \
-	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(SERVICE_NAME)-$(ENV) --no-confirm-changeset
+	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(PROJECT_NAME)-$(ENV) --no-confirm-changeset
 
 .PHONY: dev
 dev: generate-endpoints                        ## Build and run locally
@@ -41,7 +41,7 @@ dev-watch: generate-endpoints                  ## Build and run locally. Will ma
 .PHONY: dev-deploy
 dev-deploy: generate-endpoints                 ## Deploy project, will create parameter-overrides based on .secrets.local.json
 	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
-	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(SERVICE_NAME)-$(ENV) --no-confirm-changeset
+	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(PROJECT_NAME)-$(ENV) --no-confirm-changeset
 
 .PHONY: dev-invoke
 dev-invoke:                                    ## Invoke one-time a lambda NAME function with data from the EVENT (optional)

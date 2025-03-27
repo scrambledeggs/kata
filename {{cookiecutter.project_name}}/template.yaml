@@ -16,31 +16,43 @@ Metadata:
     SemanticVersion: 0.0.1
 
 Parameters:
-  AlternateDomainName:
+  DomainName:
     Type: String
   AppEnv:
     Type: String
-    Default: "test"
-  CertificateArn:
+    Default: "staging"
+  DistributionId:
+    Type: String
+    Default: "NAKNANGPATATAS"
+  AmzRegion:
+    Type: String
+  AmzAccountId:
     Type: String
   CorsAllowedHeaders:
     Type: String
-    Default: "Access-Control-Allow-Headers,Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,X-Api-Key"
+    Default: "Access-Control-Allow-Headers,Origin,Accept,X-Requested-With,Content-Type,Access-Control-Request-Method,Access-Control-Request-Headers,X-Api-Key,x-api-key"
   CorsAllowedMethods:
     Type: String
     Default: "POST,GET,PUT,PATCH,DELETE,OPTIONS"
   CorsAllowedOrigins:
     Type: String
     Default: "*"
-  DistributionId:
+  Subnets:
     Type: String
   SecurityGroups:
     Type: String
-  Subnets:
+  CertificateArnUs:
+    Type: String
+  CertificateArnAp:
+    Type: String
+  HostedZoneId:
+    Type: String
+  AuthorizerFunctionArn:
     Type: String
 
 Conditions:
   ProdEnv: !Equals [!Ref AppEnv, "production"]
+  NonProdEnv: !Not [!Equals [!Ref AppEnv, "production"]]
 
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
@@ -64,6 +76,12 @@ Globals:
     Environment:
       Variables:
         APP_ENV: !Ref AppEnv
+        CORS_ALLOWED_HEADERS: !Ref CorsAllowedHeaders
+        CORS_ALLOWED_ORIGINS: !Ref CorsAllowedOrigins
+        CORS_ALLOWED_METHODS: !Ref CorsAllowedMethods
+        DISTRIBUTION_ID: !Ref DistributionId
+        AMZ_REGION: !Ref AmzRegion
+        AMZ_ACCOUNT_ID: !Ref AmzAccountId
   Api:
     TracingEnabled: true
     Cors:
@@ -86,6 +104,51 @@ Resources:
         Ref: ApplicationResourceGroup
       AutoConfigurationEnabled: "true"
 
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Tags:
+        Usage: {{ cookiecutter.project_name }}
+        Environment: !If [ProdEnv, prod, non-prod]
+      StageName: !Ref AppEnv
+      GatewayResponses:
+        DEFAULT_4xx:
+          ResponseParameters:
+            Headers:
+              Access-Control-Expose-Headers: "'WWW-Authenticate'"
+              Access-Control-Allow-Origin:
+                !Join ["", ["'", !Ref CorsAllowedOrigins, "'"]]
+      Auth:
+        DefaultAuthorizer: ApiKeyAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          ApiKeyAuthorizer:
+            FunctionPayloadType: REQUEST
+            FunctionArn: !Ref AuthorizerFunctionArn
+            Identity:
+              Headers:
+                - x-api-key
+                - x-user-token
+                - Authorizer
+              ReauthorizeEvery: 0
+
+  ApiDomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    DependsOn:
+      - ApiGateway
+    Properties:
+      DomainName: !Ref DomainName
+      DomainNameConfigurations:
+        - CertificateArn: !Ref CertificateArnAp
+          EndpointType: REGIONAL
+
+  ApiGatewayMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref ApiGateway
+      DomainName: !Ref ApiDomainName
+      Stage: !Ref AppEnv
+
   CachePolicy:
     Type: AWS::CloudFront::CachePolicy
     Properties:
@@ -104,6 +167,11 @@ Resources:
             Headers:
               - Origin
               - x-user-token
+              - X-User-Token
+              - x-api-key
+              - X-Api-Key
+              - Authorizer
+              - authorizer
           QueryStringsConfig:
             QueryStringBehavior: all
   CloudFrontDistribution:
@@ -111,11 +179,13 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
+        HttpVersion: http2
         Aliases:
-          - !Ref AlternateDomainName
+          - !Ref DomainName
         ViewerCertificate:
-          AcmCertificateArn: !Ref CertificateArn
+          AcmCertificateArn: !Ref CertificateArnUs
           SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
         DefaultCacheBehavior:
           ViewerProtocolPolicy: redirect-to-https
           TargetOriginId: ServerlessRestApi
@@ -134,21 +204,21 @@ Resources:
             - HEAD # Cache GET and HEAD methods only
         Origins:
           - Id: ServerlessRestApi
-            DomainName: !Sub "${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com"
-            OriginPath: /Prod
+            DomainName: !Sub "${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+            OriginPath: !Sub "/${AppEnv}"
             CustomOriginConfig:
               OriginProtocolPolicy: https-only
 
-  # TODO: Create Route53 HostedZone Record dynamically
-  # Route53RecordSet:
-  #   Type: AWS::Route53::RecordSet
-  #   Properties:
-  #     HostedZoneId: Z118YDPZSVV5TP
-  #     Name: test-foobar.booky.ph
-  #     ResourceRecords:
-  #     - d27tg0s07b9g55.cloudfront.net
-  #     TTL: 300
-  #     Type: CNAME
+  Route53RecordNonProd:
+    Type: AWS::Route53::RecordSet
+    Condition: NonProdEnv
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront Hosted Zone ID (static)
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
 
   AllEndpoints:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -237,7 +307,9 @@ Outputs:
   CloudFrontDistributionId:
     Description: "CloudFront Distribution ID"
     Value: !Ref CloudFrontDistribution
-
-  CloudFrontDistributionDomainName:
-    Description: "CloudFront Distribution Domain Name"
+  ApiGatewayURL:
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${AppEnv}/"
+  CloudfrontDomainName:
     Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Join ["-", [!Ref AppEnv, ${{ cookiecutter.service_name }}, "CloudfrontDomainName"]]
