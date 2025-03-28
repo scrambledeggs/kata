@@ -23,13 +23,13 @@ print(f"\nSAM initialized for service {project_name}.\n")
 
 print("Next steps:")
 print(f"- Run `cd {project_name}` to switch to your new project directory.")
-print("- Fill out the `.secrets.local.json` file with your environment variables.")
+print("- Fill out the `.secrets.json` file with your environment variables.")
 if "{{ cookiecutter.db_migration }}" == "goose":
     print("- Install goose (https://github.com/pressly/goose?tab=readme-ov-file#install)")
-    print("- Add 'DatabaseURL' to your secrets.local.json and add your database URL")
+    print("- Add 'DatabaseURL' to your secrets.json and add your database URL")
 elif "{{ cookiecutter.db_migration }}" == "dbmate":
     print("- Install dbmate (https://github.com/amacneil/dbmate?tab=readme-ov-file#installation)")
-    print("- Add 'DatabaseURL' to your secrets.local.json and add your database URL")
+    print("- Add 'DatabaseURL' to your secrets.json and add your database URL")
 if "{{ cookiecutter.use_sqlc }}":
     print("- Install sqlc (https://docs.sqlc.dev/en/latest/overview/install.html)")
 print("- Run `make dev` to start the local development environment.")

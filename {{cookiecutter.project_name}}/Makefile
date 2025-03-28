@@ -30,23 +30,23 @@ deploy: generate-secrets generate-endpoints    ## Deploy project, will create pa
 
 .PHONY: dev
 dev: generate-endpoints                        ## Build and run locally
-	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
+	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.json); \
 	sam local start-api --port 3000 --parameter-overrides "$$envs"
 
 .PHONY: dev-watch
 dev-watch: generate-endpoints                  ## Build and run locally. Will maintain a watcher for changes and live reload the service
-	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
+	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.json); \
 	(air &) && sam local start-api --port 3000 --parameter-overrides "$$envs"
 
 .PHONY: dev-deploy
-dev-deploy: generate-endpoints                 ## Deploy project, will create parameter-overrides based on .secrets.local.json
-	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
+dev-deploy: generate-endpoints                 ## Deploy project, will create parameter-overrides based on .secrets.json
+	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.json); \
 	sam deploy --parameter-overrides "$$envs" --region $(AWS_REGION) --stack-name $(PROJECT_NAME)-$(ENV) --no-confirm-changeset
 
 .PHONY: dev-invoke
 dev-invoke:                                    ## Invoke one-time a lambda NAME function with data from the EVENT (optional)
 	@if [ -z "$(NAME)" ]; then echo "Error: Please provide NAME of lambda to invoke."; exit 1; fi
-	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.local.json); \
+	@envs=$$(go run scripts/generate-parameter-overrides/main.go -path=.secrets.json); \
 	sam local invoke $(NAME) --parameter-overrides "$$envs"  --event $(EVENT)
 
 .PHONY: build-watch
@@ -69,10 +69,10 @@ db-add:                                        ## Add a new migration file opt. 
 db-up:                                         ## Migrate the DB to the most recent version available
 {%- if cookiecutter.db_migration == "goose" %}
 	GOOSE_DRIVER=postgres \
-	GOOSE_DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	GOOSE_DBSTRING=$(shell cat .secrets.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
 	goose -dir db/migrations up
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	DATABASE_URL=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	DATABASE_URL=$(shell cat .secrets.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
 	dbmate --migrations-dir db/migrations --no-dump-schema migrate
 {%- endif %}
 
@@ -80,10 +80,10 @@ db-up:                                         ## Migrate the DB to the most rec
 db-down:                                       ## Roll back the migration version by 1
 {%- if cookiecutter.db_migration == "goose" %}
 	GOOSE_DRIVER=postgres \
-	GOOSE_DBSTRING=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	GOOSE_DBSTRING=$(shell cat .secrets.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
 	goose -dir db/migrations down
 {%- elif cookiecutter.db_migration == "dbmate" %}
-	DATABASE_URL=$(shell cat .secrets.local.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
+	DATABASE_URL=$(shell cat .secrets.json | sed -n 's/.*"DatabaseURL": *"\([^"]*\)".*/\1/p') \
 	dbmate --migrations-dir db/migrations --no-dump-schema down
 {%- endif %}
 {%- endif %}
