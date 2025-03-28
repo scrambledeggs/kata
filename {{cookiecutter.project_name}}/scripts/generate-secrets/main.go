@@ -19,12 +19,12 @@ const DEFAULT_ENV = "test"
 const DEFAULT_REGION = "ap-southeast-1"
 
 func main() {
-	service_name := "{{ cookiecutter.project_name }}"
+	projectName := "{{ cookiecutter.project_name }}"
 	environment := flag.String("env", DEFAULT_ENV, "Environment")
 	region := flag.String("region", DEFAULT_REGION, "AWS Region")
 	flag.Parse()
 
-	secretName := *environment + "-" + service_name
+	secretName := *environment + "-" + projectName
 
 	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(*region))
 	if err != nil {

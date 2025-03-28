@@ -4,21 +4,28 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 ```bash
 .
-├── db                            <-- Database folders
-|   └── migrations                <-- Migration files by goose (or choose your poison)
-├── events                        <-- Contains sample events for invoking the lambda function
-├── handlers                      <-- Source code for lambda functions
-│   └── ActionResourceV1          <-- Lambda function name
-│      ├── main_test.go           <-- Lambda function unit test
-|      └── main.go                <-- Lambda function code
-├── scripts                       <-- Go code that executed separately
-├── .secrets.local.json           <-- (gitignored) holds the ENV secrets json
-├── go.mod                        <-- dependency manager
-├── go.sum                        <-- modules
-├── Makefile                      <-- Make to automate build
-├── README.md                     <-- You are here
-├── samconfig.toml                <-- Local Deployment Script to AWS
-└── template.yaml                 <-- AWS SAM template file for building the infrastructure
+├── .github
+│   └── workflows                   <-- Github workflows directory
+│       └── deploy-stater.yml       <-- Workflow that handles the deploy trigger
+│       └── deploy.yml              <-- Handles the process of deployment
+│       └── test.yml                <-- Handles the unit test on pull request
+├── db                              <-- Database folders
+│   └── migrations                  <-- Migration files by goose (or choose your poison)
+├── docs                            <-- Docs directory
+│   └── api_contract.yaml           <-- Swagger API config
+├── events                          <-- Contains sample events for invoking the lambda function
+├── handlers                        <-- Source code for lambda functions
+│   └── ActionResourceV1            <-- Lambda function name
+│      ├── main_test.go             <-- Lambda function unit test
+│      └── main.go                  <-- Lambda function code
+├── scripts                         <-- Go code that executed separately
+├── .secrets.json                   <-- (gitignored) holds the ENV secrets json
+├── go.mod                          <-- dependency manager
+├── go.sum                          <-- modules
+├── Makefile                        <-- Make to automate build
+├── README.md                       <-- You are here
+├── samconfig.toml                  <-- Local Deployment Script to AWS
+└── template.yaml                   <-- AWS SAM template file for building the infrastructure
 ```
 
 ## Requirements
@@ -30,7 +37,7 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 ## Setup process
 
-1. This is provided with .secrets.local.json and has empty ENV variables
+1. This is provided with .secrets.json and has empty ENV variables
 
 ### Environment
 
@@ -38,16 +45,21 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 2. Format is in JSON format, keys should be in CamelCase (sample data)
 ```json
 {
-  "AlternateDomainName": "test-{{ cookiecutter.project_name }}.booky.ph",
-  "AppEnv": "test",
-  "CertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/5da5njye-this-test-yeah-1eb057af5006",
+  "DomainName": "staging-{{ cookiecutter.project_name }}.booky.ph",
+  "AppEnv": "staging",
+  "CertificateArnUs": "arn:aws:acm:us-east-1:123456789012:certificate/5da5njye-this-test-yeah-1eb057af5006", # Certificate ARN for us-east-1
+  "CertificateArnAp": "arn:aws:acm:us-east-1:123456789012:certificate/5da5njye-this-test-yeah-1eb057af5006", # Certificate ARN for ap-southeast-1
   "DistributionId": "E3TESTX633ONLY",
   "SecurityGroups": "sg-test32bae2b93test,sg-test32bae2b93just",
-  "Subnets": "subnet-test32bae2b93test"
+  "Subnets": "subnet-test32bae2b93test",
+  "AmzRegion": "ap-southeast-1",
+  "AmzAccountId": "123456789012",
+  "HostedZoneId": "E3TESTX633ONLY",
+  "AuthorizerFunctionArn": "arn:aws:acm:ap-southeast-1:123456789012:certificate/5da5njye-this-test-yeah-1eb057af5006",
 }
 ```
 3. This is then read by `Makefile` using `generate-parameter-overrides`
-4. Development `make dev` uses `.secrets.local.json`
+4. Development `make dev` uses `.secrets.json`
     4.1. Optionally use `make dev-watch` to use live-reloading while developing
 5. Deployment (`make deploy`) uses (and builds) using `.secrets.json`
 
@@ -55,7 +67,7 @@ This is a template for {{ cookiecutter.project_name }} - Below is a brief explan
 
 **Invoking function locally through local API Gateway**
 
-1. Make sure you have `.secrets.local.json` file
+1. Make sure you have `.secrets.json` file
 2. Run the following in your shell:
 ```bash
 $ make dev
@@ -85,28 +97,15 @@ To deploy your application for the first time,
     - This would be used when generate-secrets executes
 2. Run the following in your shell:
 ```bash
-$ make deploy ENV=test
+$ make deploy ENV=staging
 ```
 
 ### Github actions
 1. Actions -> Start Deployment
 2. Run workflow
 - Choose branch [main]
-- Deploy to TEST Env
+- Deploy to STAGING Env
 - Run workflow
-
-### Gacha to make CloudFront working for now
-1. After deploying, copy Output->CloudFrontDistributionId to secrets->DistributionId, redeploy
-2. Create Route53 -> Hosted Zone -> Record
-- Choose Route53
-- Hosted Zones
-- booky.ph
-- Create Record
-    - Record name: [env]-[{{ cookiecutter.project_name }}]
-    - Record type: CNAME
-    - Value: Output->CloudFrontDistributionDomainName
-    - TTL: 300
-    - Routing Policy: Simple
 
 ## Testing
 

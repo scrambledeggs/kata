@@ -1,0 +1,33 @@
+name: Run Unit Test
+run-name: Run Unit Test
+
+on: [pull_request]
+
+jobs:
+  run_unit_test:
+      name: Run unit test
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout to repo
+          uses: actions/checkout@v4
+
+        - name: Setup Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: 1.23.0
+        - run: go version
+
+        - uses: gwatts/go-coverage-action@v2
+          id: coverage
+          with:
+            # Optional coverage threshold
+            # use fail-coverage to determine what should happen below this threshold
+            # coverage-threshold: 80
+
+            # collect coverage for all packages beyond the one under test
+            cover-pkg: ./...
+
+            # Ignore code-generated files when calculating coverage totals
+            ignore-pattern: |
+              \.pb\.go$
+              \_string\.go$

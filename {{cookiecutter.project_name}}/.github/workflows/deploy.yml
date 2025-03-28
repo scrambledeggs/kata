@@ -1,8 +1,11 @@
 env:
   APP_NAME: {{ cookiecutter.project_name }}
   REGION: ap-southeast-1
-
+  SERVICE_NAME: {{ cookiecutter.service_name }}
 {% raw -%}
+  NON_PROD_DISTRIBUTION_ID: ${{ secrets.NON_PROD_DISTRIBUTION_ID }}
+  PROD_DISTRIBUTION_ID: ${{ secrets.PROD_DISTRIBUTION_ID }}
+
 name: Deploy to environment
 run-name: Deploy `${{ github.ref_name }}` on *${{ inputs.environment }}* env 🚀
 
@@ -36,6 +39,10 @@ jobs:
       - name: Set default tag version
         id: default-tag-version
         run: echo "sha=`echo ${GITHUB_SHA} | cut -c1-7`" >> $GITHUB_OUTPUT
+
+      - name: Set is prod deployment
+        id: deployment
+        run: echo "is_prod=${{ inputs.environment == 'prod' || inputs.environment == 'production' }}" >> $GITHUB_OUTPUT
 
       - name: Set tag version
         id: tag-version
@@ -80,6 +87,50 @@ jobs:
 
       - name: Deploy
         run: make deploy ENV=${{ inputs.environment }}
+
+      - name: Upload API Documentation to S3
+        continue-on-error: true
+        if: ${{ !fromJSON(steps.deployment.outputs.is_prod) }}
+        uses: keithweaver/aws-s3-github-action@v1.0.0
+        with:
+          command: cp
+          destination: 's3://open-api-contracts/${{ env.APP_NAME }}.yml'
+          source: ./docs/api_contract.yml
+
+      - name: Invalidate CloudFront cache (Non Prod)
+        continue-on-error: true
+        if: ${{ env.NON_PROD_DISTRIBUTION_ID != 'NAKNANGPATATAS' && !fromJSON(steps.deployment.outputs.is_prod) }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ env.NON_PROD_DISTRIBUTION_ID }} --paths "/*"
+
+      - name: Invalidate CloudFront cache (Prod)
+        continue-on-error: true
+        if: ${{ env.PROD_DISTRIBUTION_ID != 'NAKNANGPATATAS' && fromJSON(steps.deployment.outputs.is_prod) }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ env.PROD_DISTRIBUTION_ID }} --paths "/*"
+
+      - name: Manage Subscriptions (NON-PROD)
+        continue-on-error: true
+        if: ${{ !fromJSON(steps.deployment.outputs.is_prod) }}
+        uses: scrambledeggs/booky-subscriptions-manager/.github/composite-actions/manage-subscriptions@develop
+        with:
+          environment: ${{ inputs.environment }}
+
+      - name: Manage Subscriptions (PROD)
+        continue-on-error: true
+        if: ${{ fromJSON(steps.deployment.outputs.is_prod) }}
+        uses: scrambledeggs/booky-subscriptions-manager/.github/composite-actions/manage-subscriptions@master
+        with:
+          environment: ${{ inputs.environment }}
+
+      - name: Create route53 record for prod on non-prod (PROD)
+        if: ${{ fromJSON(steps.deployment.outputs.is_prod) }}
+        uses: scrambledeggs/booky-infra/.github/composite-actions/create-prod-route53@chore/create-prod-route53
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          app_name: ${{ env.APP_NAME }}
+          non_prod_access_key_id: ${{ secrets.NON_PROD_AWS_ACCESS_KEY_ID }}
+          non_prod_secret_access_key: ${{ secrets.NON_PROD_AWS_SECRET_ACCESS_KEY }}
 
       - name: Post to slack - Done
         uses: act10ns/slack@v2
