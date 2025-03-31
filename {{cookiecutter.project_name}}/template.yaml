@@ -236,6 +236,9 @@ Resources:
           Properties:
             Path: /endpoints
             Method: GET
+            RestApiId: !Ref ApiGateway
+            Auth:
+              Authorizer: NONE
 
   HelloWorldV1:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -253,6 +256,7 @@ Resources:
           Properties:
             Path: /v1/hello-world
             Method: GET
+            RestApiId: !Ref ApiGateway
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM_1: VALUE
@@ -273,6 +277,7 @@ Resources:
           Properties:
             Path: /v1/cached-world
             Method: GET
+            RestApiId: !Ref ApiGateway
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           PARAM_1: ANOTHER_VALUE
@@ -293,6 +298,7 @@ Resources:
           Properties:
             Path: /v1/invalidate-cached-world
             Method: POST
+            RestApiId: !Ref ApiGateway
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           DISTRIBUTION_ID: !Ref DistributionId # TODO: Find a way to get !Ref CloudFrontDistribution (CloudFrontDistributionID) without circular dependency
@@ -312,4 +318,4 @@ Outputs:
   CloudfrontDomainName:
     Value: !GetAtt CloudFrontDistribution.DomainName
     Export:
-      Name: !Join ["-", [!Ref AppEnv, ${{ cookiecutter.service_name }}, "CloudfrontDomainName"]]
+      Name: !Join ["-", [!Ref AppEnv, {{ cookiecutter.service_name }}, "CloudfrontDomainName"]]
