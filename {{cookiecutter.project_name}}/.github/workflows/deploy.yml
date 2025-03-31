@@ -95,7 +95,7 @@ jobs:
         with:
           command: cp
           destination: 's3://open-api-contracts/${{ env.APP_NAME }}.yml'
-          source: ./docs/api_contract.yml
+          source: ./docs/api_contract.yaml
 
       - name: Invalidate CloudFront cache (Non Prod)
         continue-on-error: true
